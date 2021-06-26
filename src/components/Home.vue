@@ -38,14 +38,18 @@
           this.count--;
           this.achivedText = this.achivedText.substring(0,this.achivedText.length -1);
         }
-        if(this.count < 0) this.count = 0;
-        if(this.count >= this.textArr.length) {
+        if(this.count < 0) this.count = -1;
+        if(this.count === this.textArr.length) {
           this.count = this.textArr.length - 1;
           this.achivedText = this.textGoal;
+          this.blur();
         }
         console.log(this.count);
+      },
+      blur() {
+        const target = document.querySelector('.src-components-home');
+        target.classList.add('animation');
       }
-
     },
     computed: {
 
@@ -56,12 +60,16 @@
 </script>
 
 <style scoped lang="css">
+  .animation {
+    animation: blur 10s forwards;
+  }
+
   * {
     color: white;
   }
 
   h1 {
-    font-size: 60px;
+    font-size: 70px;
     font-weight: 500;
     margin-bottom: 20px;
   }
@@ -110,5 +118,18 @@
     align-items: center;
     justify-content: center;
     flex-direction: column;
+  }
+
+  @keyframes blur {
+    0% {
+      filter: blur(0px);
+    }
+    99% {
+      filter: blur(50px);
+      opacity: 0.4;
+    }
+    100% {
+      opacity: 0;
+    }
   }
 </style>
