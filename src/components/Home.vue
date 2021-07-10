@@ -1,14 +1,22 @@
 <template>
 
   <section class="src-components-home">
+    <div class="overlay"></div>
+    <audio id="audioDrone" loop>
+      <source src="../assets/please-let-me-out-drone.mp3" type="audio/mp3">
+    </audio>
+    <audio id="audioIn" loop>
+      <source src="../assets/please-let-me-out-drone-in.mp3" type="audio/mp3">
+    </audio>
+
     <div class="container">
       <h1>Actions have consecuencies</h1>
       <h4>Don't get inside. Write him a message</h4>
       <div class="input-wrapper">
-        <input autocomplete="off" id="textInput" type="text" v-model="inputText" v-on:keydown="handleWrite($event)">
+        <input autocomplete="off" id="textInput" type="text" v-model="inputText" @click="typing()" @keydown="handleWrite($event)">
         <div class="input-see" contenteditable="true">{{ achivedText }}</div>
       </div>
-      <p class="message reverse" v-if="!needsAnimation">Your are in</p>
+      <p class="message reverse" v-if="!needsAnimation">You've made your choice</p>
     </div>
   </section>
 
@@ -22,9 +30,14 @@
     mounted () {
       this.textArr = this.textGoal.split('');
       this.subjectIsIn = localStorage.getItem('subjectIsIn');
+      this.audio = document.getElementById('audioDrone');
+      this.audioIn = document.getElementById('audioIn');
       if(this.subjectIsIn) {
         this.setAfterScene();
       }
+      document.querySelector('.overlay').addEventListener('click', () => {
+        this.interactionDone = true;
+      });
     },
     data () {
       return {
@@ -34,7 +47,12 @@
         inputText: '',
         needsAnimation: true,
         subjectIsIn: '',
-        count: -1
+        firstSceneIsSet: false,
+        secondSceneIsSet: false,
+        count: -1,
+        audio: null,
+        audioIn: null,
+        interactionDone: false
       }
     },
     methods: {
@@ -53,17 +71,36 @@
           this.achivedText = this.textGoal;
           if(this.needsAnimation) {
             this.addAnimation(true, 'container', 'animation');
-            setTimeout(() => {
-              this.addAnimation(true, 'src-components-home', 'dark-animation');
-            }, 1000);
-            setTimeout(() => {
-              this.setAfterScene();
-            }, 6000);
+            this.setHideScene();
+            this.setComeScene();
           }
         }
         this.inputText = this.achivedText;
       },
+      setHideScene() {
+        this.fader();
+        setTimeout(() => {
+          this.addAnimation(true, 'src-components-home', 'dark-animation');
+          this.firstSceneIsSet = true;
+        }, 1000);
+        setTimeout(() => {
+          this.audio.pause();
+        }, 5000);
+      },
+      setComeScene() {
+        setTimeout(() => {
+          this.setAfterScene();
+        }, 6000);
+      },
       setAfterScene() {
+        this.subjectIsIn = localStorage.getItem('subjectIsIn');
+        if(this.interactionDone) {
+          this.audioIn.play();
+        } else {
+          window.addEventListener('click', () => {
+            this.audioIn.play();
+          });
+        }
         this.$emit('reverse');
         this.addAnimation(true, 'container', 'no-animation');
         this.addAnimation(true, 'src-components-home', 'no-animation');
@@ -71,12 +108,31 @@
         this.count = -1;
         this.needsAnimation = false;
         localStorage.setItem('subjectIsIn', true);
+        setTimeout(() => {
+          document.querySelector('.message').classList.add('hide-message');
+        }, 5000);
       },
       addAnimation(isClass, element, animation) {
         let type = '';
         isClass ? type = '.' : type = '#';
         const target = document.querySelector(`${type}${element}`);
         target.classList.add(`${animation}`);
+      },
+      typing() {
+        if(this.subjectIsIn !== 'true') {
+          if(this.audio.paused) {
+            this.play();
+          }
+        }
+      },
+      play() {
+        this.audio.play();
+      },
+      fader() {
+        const duration = this.audio.duration;
+        setTimeout(() => {
+          this.audio.currentTime = duration - 5;
+        }, 2000);
       }
     },
     computed: {
@@ -105,7 +161,7 @@
 
   input {
     opacity: 0;
-    z-index: 2;
+    z-index: 9;
     padding: 10px;
     border: none;
     border-radius: 6px;
@@ -176,6 +232,20 @@
     padding: 10px;
     background-color: #ffffff10;
     border-radius: 6px;
+    transition: all 4s ease-in-out;
+  }
+
+  .hide-message {
+    opacity: 0;
+    filter: blur(20px);
+  }
+
+  .overlay {
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
   }
 
   @keyframes blur {

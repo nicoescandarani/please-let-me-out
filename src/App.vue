@@ -1,6 +1,12 @@
 <template>
   <div id="app">
-    <home v-on:reverse="handleReverse()" />
+    <audio id="audioDronee" loop>
+      <source src="./assets/please-let-me-out.mp3" type="audio/mp3">
+    </audio>
+    <audio id="audioDrone" loop>
+      <source src="./assets/please-let-me-out-drone.mp3" type="audio/mp3">
+    </audio>
+    <Home v-on:reverse="handleReverse()" />
   </div>
 </template>
 
@@ -15,9 +21,15 @@ export default {
   },
   mounted() {
     const subjectIsIn = localStorage.getItem('subjectIsIn');
-    console.log(subjectIsIn);
+    // this.audio = document.getElementById('audioDrone');
+    // console.log(subjectIsIn);
     if(subjectIsIn) {
       this.handleReverse();
+    }
+  },
+  data () {
+    return {
+      audio: null
     }
   },
   methods: {
